@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 public class CurrencyConstants {
 
     public static final BigDecimal USDT_TO_INR =
-            BigDecimal.valueOf(100);
+            BigDecimal.valueOf(98);
     private CurrencyConstants() {}
 
 }

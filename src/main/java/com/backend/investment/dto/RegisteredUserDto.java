@@ -1,30 +1,37 @@
 package com.backend.investment.dto;
 
+import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import lombok.Data;
-
 @Data
-public class UserResponseDto {
+public class RegisteredUserDto {
 
     private Long id;
+
     private String phone;
+
     private String myReferralCode;
-    private Long referrerId;
+
+    private String referredByPhone;
+
+    private Long referralCount;
+
     private BigDecimal balance;
+
     private BigDecimal totalIncome;
+
     private BigDecimal totalRecharge;
+
     private BigDecimal totalWithdraw;
+
     private String status;
+
     private String location;
+
     private String ipAddress;
-    private String accountHolderName;
 
-    private String accountNumber;
-
-    private String ifscCode;
-
-    private String bankName;
     private LocalDateTime createdOn;
+
 }

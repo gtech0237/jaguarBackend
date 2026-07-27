@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS users (
 
-   id BIGINT PRIMARY KEY,
+    id BIGINT PRIMARY KEY,
 
     phone VARCHAR(15) NOT NULL UNIQUE,
 
@@ -8,9 +8,9 @@ CREATE TABLE IF NOT EXISTS users (
 
     withdraw_password VARCHAR(255) NOT NULL,
 
-    referral_code VARCHAR(50),
-
-    referred_by BIGINT,
+    -- Referral Details
+    my_referral_code VARCHAR(20) UNIQUE,
+    referrer_id BIGINT,
 
     balance NUMERIC(15,2) NOT NULL DEFAULT 0,
 
@@ -27,7 +27,6 @@ CREATE TABLE IF NOT EXISTS users (
     location VARCHAR(255),
 
     -- Bank Details
-
     account_holder_name VARCHAR(100),
 
     account_number VARCHAR(50),
@@ -38,8 +37,8 @@ CREATE TABLE IF NOT EXISTS users (
 
     created_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_users_referred_by
-        FOREIGN KEY(referred_by)
+    CONSTRAINT fk_users_referrer
+        FOREIGN KEY (referrer_id)
         REFERENCES users(id)
 
 );
@@ -213,3 +212,5 @@ CREATE TABLE IF NOT EXISTS  admins
     role VARCHAR(30) DEFAULT 'ADMIN',
     created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+

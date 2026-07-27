@@ -58,7 +58,20 @@ public class AuthServiceImpl implements IAuthService {
         user.setWithdrawPassword(
                 passwordEncoder.encode(request.getWithdrawPassword())
         );
-        user.setReferralCode(request.getReferralCode());
+        // Generate user's own referral code
+        user.setMyReferralCode(generateReferralCode());
+
+        // If referral code entered
+        if (request.getReferralCode() != null
+                && !request.getReferralCode().isBlank()) {
+
+            User referrer = userRepository
+                    .findByMyReferralCode(request.getReferralCode())
+                    .orElseThrow(() ->
+                            new BadRequestException("Invalid referral code"));
+
+            user.setReferrerId(referrer.getId());
+        }
         user.setIp_address(request.getIpAddress());
         user.setLocation(request.getLocation());
         user.setBalance(BigDecimal.ZERO);
@@ -138,5 +151,19 @@ public class AuthServiceImpl implements IAuthService {
         } while (userRepository.existsById(id));
 
         return id;
+    }
+    private String generateReferralCode() {
+
+        String code;
+
+        do {
+
+            code = "REF" +
+                    ThreadLocalRandom.current()
+                            .nextInt(100000, 999999);
+
+        } while (userRepository.findByMyReferralCode(code).isPresent());
+
+        return code;
     }
 }

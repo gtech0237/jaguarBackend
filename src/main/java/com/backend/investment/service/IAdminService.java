@@ -16,5 +16,8 @@ public interface IAdminService {
 
     String rejectWithdraw(Long withdrawId);
     List<DailyIncomeDetailsDto> getDailyIncomeDetails();
+    List<RegisteredUserDto> getRegisteredUsers();
+
+    List<ReferralUserDto> getReferralUsers(Long userId);
 
 }

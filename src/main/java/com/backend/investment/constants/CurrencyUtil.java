@@ -13,7 +13,7 @@ public final class CurrencyUtil {
      * 1 USDT = ₹100
      */
     public static final BigDecimal USDT_RATE =
-            BigDecimal.valueOf(100);
+            BigDecimal.valueOf(98);
 
     private CurrencyUtil() {
     }
@@ -22,7 +22,7 @@ public final class CurrencyUtil {
      * INR -> USDT
      *
      * Example:
-     * ₹1000 -> 10.00 USDT
+     * ₹980 -> 10.00 USDT
      */
     public static BigDecimal inrToUsdt(BigDecimal inr) {
 
@@ -37,7 +37,7 @@ public final class CurrencyUtil {
      * USDT -> INR
      *
      * Example:
-     * 10 USDT -> ₹1000
+     * 1 USDT -> ₹98
      */
     public static BigDecimal usdtToInr(BigDecimal usdt) {
 

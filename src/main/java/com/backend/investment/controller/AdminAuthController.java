@@ -17,6 +17,11 @@ import java.util.List;
 public class AdminAuthController {
     private final IAdminService adminService;
 
+    @GetMapping("/test")
+    public String test() {
+        return "Admin Controller Working";
+    }
+
     @PostMapping("/login")
     public ResponseEntity<AdminLoginResponse> login(@RequestBody AdminLoginRequest request) {
         return ResponseEntity.ok(adminService.login(request)
@@ -76,6 +81,24 @@ public class AdminAuthController {
         return ResponseEntity.ok(
                 adminService.getDailyIncomeDetails()
         );
+    }
+    @GetMapping("/users")
+    public ResponseEntity<List<RegisteredUserDto>> getRegisteredUsers() {
+
+        return ResponseEntity.ok(
+                adminService.getRegisteredUsers()
+        );
+
+    }
+
+    @GetMapping("/users/{userId}/referrals")
+    public ResponseEntity<List<ReferralUserDto>> getReferralUsers(
+            @PathVariable Long userId) {
+
+        return ResponseEntity.ok(
+                adminService.getReferralUsers(userId)
+        );
+
     }
 
 

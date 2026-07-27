@@ -17,6 +17,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import com.backend.investment.dto.RegisteredUserDto;
+import com.backend.investment.dto.ReferralUserDto;
 
 
 @Service
@@ -484,9 +486,6 @@ public class AdminServiceImpl implements IAdminService {
                         }
 
                     }
-
-
-
                     return DailyIncomeDetailsDto.builder()
 
                             .investmentId(
@@ -550,6 +549,84 @@ public class AdminServiceImpl implements IAdminService {
                             )
 
                             .build();
+
+                })
+                .toList();
+    }
+    @Override
+    public List<RegisteredUserDto> getRegisteredUsers() {
+
+        return userRepository.findAll()
+                .stream()
+                .map(user -> {
+
+                    RegisteredUserDto dto = new RegisteredUserDto();
+
+                    dto.setId(user.getId());
+
+                    dto.setPhone(user.getPhone());
+
+                    dto.setMyReferralCode(user.getMyReferralCode());
+
+                    dto.setBalance(user.getBalance());
+
+                    dto.setTotalIncome(user.getTotalIncome());
+
+                    dto.setTotalRecharge(user.getTotalRecharge());
+
+                    dto.setTotalWithdraw(user.getTotalWithdraw());
+
+                    dto.setStatus(user.getStatus());
+
+                    dto.setLocation(user.getLocation());
+
+                    dto.setIpAddress(user.getIp_address());
+
+                    dto.setCreatedOn(user.getCreatedOn());
+
+                    dto.setReferralCount(
+                            userRepository.countByReferrerId(user.getId())
+                    );
+
+                    if (user.getReferrerId() != null) {
+
+                        userRepository.findById(user.getReferrerId())
+                                .ifPresent(referrer ->
+                                        dto.setReferredByPhone(referrer.getPhone()));
+
+                    } else {
+
+                        dto.setReferredByPhone("-");
+
+                    }
+
+                    return dto;
+
+                })
+                .toList();
+    }
+    @Override
+    public List<ReferralUserDto> getReferralUsers(Long userId) {
+
+        return userRepository.findByReferrerId(userId)
+                .stream()
+                .map(user -> {
+
+                    ReferralUserDto dto = new ReferralUserDto();
+
+                    dto.setId(user.getId());
+
+                    dto.setPhone(user.getPhone());
+
+                    dto.setBalance(user.getBalance());
+
+                    dto.setTotalIncome(user.getTotalIncome());
+
+                    dto.setTotalRecharge(user.getTotalRecharge());
+
+                    dto.setStatus(user.getStatus());
+
+                    return dto;
 
                 })
                 .toList();

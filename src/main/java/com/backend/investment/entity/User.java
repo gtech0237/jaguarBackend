@@ -21,8 +21,11 @@ public class User {
     @Column(name="withdraw_password")
     private String withdrawPassword;
 
-    @Column(name="referral_code")
-    private String referralCode;
+    @Column(name = "my_referral_code", unique = true)
+    private String myReferralCode;
+
+    @Column(name = "referrer_id")
+    private Long referrerId;
 
     private BigDecimal balance = BigDecimal.ZERO;
 

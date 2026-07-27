@@ -19,7 +19,8 @@ public class UserMapper {
 
         dto.setId(user.getId());
         dto.setPhone(user.getPhone());
-        dto.setReferralCode(user.getReferralCode());
+        dto.setMyReferralCode(user.getMyReferralCode());
+        dto.setReferrerId(user.getReferrerId());
         dto.setBalance(user.getBalance());
         dto.setTotalIncome(user.getTotalIncome());
         dto.setTotalRecharge(user.getTotalRecharge());
@@ -46,18 +47,27 @@ public class UserMapper {
 
         user.setId(dto.getId());
         user.setPhone(dto.getPhone());
-        user.setReferralCode(dto.getReferralCode());
+
+        user.setMyReferralCode(dto.getMyReferralCode());
+        user.setReferrerId(dto.getReferrerId());
+
         user.setBalance(dto.getBalance());
         user.setTotalIncome(dto.getTotalIncome());
         user.setTotalRecharge(dto.getTotalRecharge());
         user.setTotalWithdraw(dto.getTotalWithdraw());
+
         user.setStatus(dto.getStatus());
+
         user.setLocation(dto.getLocation());
         user.setIp_address(dto.getIpAddress());
-        dto.setAccountHolderName(user.getAccountHolderName());
-        dto.setAccountNumber(user.getAccountNumber());
-        dto.setIfscCode(user.getIfscCode());
-        dto.setBankName(user.getBankName());
+
+        user.setAccountHolderName(dto.getAccountHolderName());
+        user.setAccountNumber(dto.getAccountNumber());
+        user.setIfscCode(dto.getIfscCode());
+        user.setBankName(dto.getBankName());
+
+        user.setCreatedOn(dto.getCreatedOn());
+
         return user;
     }
 
