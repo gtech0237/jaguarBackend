@@ -70,9 +70,11 @@ public class SecurityConfig {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOriginPatterns(List.of(
-                "http://localhost:*",
-                "https://*.netlify.app"
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "http://localhost:5174",
+                "https://jaguarmotor.com",
+                "https://www.jaguarmotor.com"
         ));
 
         configuration.setAllowedMethods(List.of(
