@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.backend.investment.service.IUserService;
 import org.springframework.stereotype.Service;
 
 import com.backend.investment.Exception.BadRequestException;
@@ -35,158 +36,189 @@ public class InvestmentServiceImpl implements InvestmentService {
     private final UserInvestmentRepository investmentRepository;
 
     private final WalletTransactionRepository walletRepository;
+    private final IUserService userService;
 
     @Override
     @Transactional
     public InvestmentResponseDto invest(InvestmentRequestDto request) {
 
+
+
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Investment",
-                                "UserId",
-                                request.getUserId().toString()
-                        ));
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Investment",
+                                        "UserId",
+                                        request.getUserId().toString()
+                                )
+                        );
+
 
         Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Investment",
-                                "ProductId",
-                                request.getProductId().toString()
-                        ));
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Investment",
+                                        "ProductId",
+                                        request.getProductId().toString()
+                                )
+                        );
 
-        if (!"ACTIVE".equalsIgnoreCase(product.getStatus())) {
-            throw new BadRequestException("This investment plan is not available.");
-        }
 
         /*
-         * Product price is stored in INR.
-         * Convert to USDT before deducting wallet.
+         * =========================================================
+         * 3. CHECK PRODUCT STATUS
+         * =========================================================
          */
-        BigDecimal investmentUsdt =
-                CurrencyUtil.inrToUsdt(product.getInvestmentAmount());
 
-        if (user.getBalance().compareTo(investmentUsdt) < 0) {
+        if (!"ACTIVE".equalsIgnoreCase(
+                product.getStatus()
+        )) {
 
+            throw new BadRequestException(
+                    "This investment plan is not available."
+            );
+        }
+
+
+        /*
+         * =========================================================
+         * 4. PRODUCT PRICE
+         *
+         * Product amount = INR
+         * Wallet balance = USDT
+         *
+         * Convert INR -> USDT
+         * =========================================================
+         */
+
+        BigDecimal investmentInr = product.getInvestmentAmount();
+
+        BigDecimal investmentUsdt = CurrencyUtil.inrToUsdt(investmentInr);
+
+
+        /*
+         * =========================================================
+         * 5. CHECK BALANCE
+         * =========================================================
+         */
+
+        BigDecimal currentBalance = user.getBalance() != null ? user.getBalance() : BigDecimal.ZERO;
+
+        if (currentBalance.compareTo(investmentUsdt) < 0) {
             throw new BadRequestException(
                     "Insufficient wallet balance."
             );
-
         }
 
-        BigDecimal openingBalance = user.getBalance();
 
-        BigDecimal closingBalance =
-                openingBalance.subtract(investmentUsdt);
+        /*
+         * =========================================================
+         * 6. DEDUCT INVESTMENT FROM WALLET
+         * =========================================================
+         */
 
+        BigDecimal openingBalance = currentBalance;
+        BigDecimal closingBalance = openingBalance.subtract(investmentUsdt);
         user.setBalance(closingBalance);
-
         userRepository.save(user);
 
 
-        UserInvestment investment = new UserInvestment();
-
-        investment.setUser(user);
-
-        investment.setProduct(product);
-
-        investment.setInvestmentAmount(
-                product.getInvestmentAmount()
-        );
-
-        investment.setDailyIncome(
-                product.getDailyIncome()
-        );
-
-        investment.setDurationDays(
-                product.getDurationDays()
-        );
-
-        LocalDate today = LocalDate.now();
-
-        investment.setStartDate(today);
-
-        investment.setEndDate(
-                today.plusDays(product.getDurationDays())
-        );
-
-        investment.setStatus("ACTIVE");
-
-        investment = investmentRepository.save(investment);
-
         /*
-         * Wallet Transaction
+         * =========================================================
+         * 7. CREATE INVESTMENT
+         * =========================================================
+         */
+
+        UserInvestment investment = new UserInvestment();
+        investment.setUser(user);
+        investment.setProduct(product);
+        /*
+         * IMPORTANT:
+         * Investment amount remains INR
+         */
+
+        investment.setInvestmentAmount(investmentInr);
+        investment.setDailyIncome(product.getDailyIncome());
+        investment.setDurationDays(product.getDurationDays());
+        LocalDate today = LocalDate.now();
+        investment.setStartDate(today);
+        investment.setEndDate(today.plusDays(product.getDurationDays()));
+        /*
+         * Investment becomes ACTIVE immediately
+         */
+        investment.setStatus("ACTIVE");
+        investment = investmentRepository.save(investment);
+        /*
+         * =========================================================
+         * 8. REFERRAL COMMISSION
+         *
+         * Commission is based on INVESTMENT ONLY.
+         *
+         * Level 1 = 15%
+         * Level 2 = 2%
+         * Level 3 = 1%
+         *
+         * The commission is added to referrer's BALANCE.
+         * =========================================================
+         */
+
+        userService.distributeReferralCommission(user, investmentInr);
+        /*
+         * =========================================================
+         * 9. WALLET TRANSACTION
+         *
          * Wallet always stores USDT.
+         * =========================================================
          */
 
         WalletTransaction wallet = new WalletTransaction();
-
         wallet.setUser(user);
-
         wallet.setTransactionType("INVESTMENT");
-
         wallet.setAmount(investmentUsdt);
-
         wallet.setOpeningBalance(openingBalance);
-
         wallet.setClosingBalance(closingBalance);
-
         wallet.setReferenceId(investment.getId());
-
         wallet.setReferenceType("INVESTMENT");
-
-        wallet.setRemarks(
-                "Investment Purchase ("
-                        + product.getInvestmentAmount()
-                        + " INR = "
-                        + investmentUsdt
-                        + " USDT)"
-        );
-
+        wallet.setRemarks("Investment Purchase (" + investmentInr + " INR = " + investmentUsdt + " USDT)");
         walletRepository.save(wallet);
-
-        InvestmentResponseDto dto =
-                new InvestmentResponseDto();
-
-        dto.setInvestmentId(investment.getId());
-
-        dto.setUserId(user.getId());
-
-        dto.setProductId(product.getId());
-
-        dto.setProductName(product.getProductName());
-
         /*
-         * Return INR to frontend.
+         * =========================================================
+         * 10. RESPONSE DTO
+         * =========================================================
          */
 
-        dto.setInvestmentAmount(
-                product.getInvestmentAmount()
-        );
+        InvestmentResponseDto dto = new InvestmentResponseDto();
+        dto.setInvestmentId(investment.getId());
+        dto.setUserId(user.getId());
+        dto.setProductId(product.getId());
+        dto.setProductName(product.getProductName());
 
-        dto.setDailyIncome(
-                product.getDailyIncome()
-        );
 
-        dto.setDurationDays(
-                product.getDurationDays()
-        );
+        /*
+         * Return INR to frontend
+         */
+
+        dto.setInvestmentAmount(investmentInr);
+        dto.setDailyIncome(product.getDailyIncome());
+        dto.setDurationDays(product.getDurationDays());
+
 
         dto.setStartDate(
                 investment.getStartDate()
         );
 
+
         dto.setEndDate(
                 investment.getEndDate()
         );
+
 
         dto.setStatus(
                 investment.getStatus()
         );
 
-        return dto;
 
+        return dto;
     }
 
     @Override

@@ -13,10 +13,17 @@ public class ReferralUserDto {
 
     private BigDecimal balance;
 
+    private BigDecimal totalIncome;
+
     private BigDecimal totalRecharge;
 
-    private BigDecimal totalIncome;
+    private BigDecimal totalInvestment;
+
+    private BigDecimal commission;
+
+    private Integer level;
 
     private String status;
 
+    private String createdOn;
 }

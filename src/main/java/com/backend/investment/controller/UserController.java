@@ -1,6 +1,7 @@
 package com.backend.investment.controller;
 
 import com.backend.investment.dto.BankAccountDto;
+import com.backend.investment.dto.TeamResponseDto;
 import com.backend.investment.dto.UserResponseDto;
 import com.backend.investment.service.IUserService;
 import lombok.RequiredArgsConstructor;
@@ -33,5 +34,15 @@ public class UserController {
             @RequestBody BankAccountDto dto){
         return ResponseEntity.ok(userService.saveBankAccount(authentication.getName(), dto));
 
+    }
+    @GetMapping("/team")
+    public ResponseEntity<TeamResponseDto> getMyTeam(
+            Authentication authentication) {
+
+        String phone = authentication.getName();
+
+        return ResponseEntity.ok(
+                userService.getMyTeam(phone)
+        );
     }
 }
