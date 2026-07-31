@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.investment.Exception.BadRequestException;
 import com.backend.investment.Exception.ResourceNotFoundException;
@@ -16,6 +17,7 @@ import com.backend.investment.repository.ProductRepository;
 import com.backend.investment.service.IProductService;
 
 import lombok.RequiredArgsConstructor;
+
 
 @Service
 @RequiredArgsConstructor
@@ -67,9 +69,10 @@ public class ProductServiceImpl implements IProductService {
         return "Product created successfully.";
     }
 
-    
+
 
     @Override
+    @Transactional(readOnly = true)
     public ProductResponseDto getProduct(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() ->
@@ -80,6 +83,7 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProductResponseDto> getAllProducts() {
 
         return productRepository.findAll()
