@@ -429,6 +429,7 @@ public class AdminServiceImpl implements IAdminService {
     }
 
     @Override
+    @Transactional
     public List<DailyIncomeDetailsDto> getDailyIncomeDetails() {
 
         return userInvestmentRepository.findByStatus("ACTIVE")
@@ -436,22 +437,15 @@ public class AdminServiceImpl implements IAdminService {
                 .map(investment -> {
 
                     User user = investment.getUser();
-
                     Product product = investment.getProduct();
-
                     Plan plan = product.getPlan();
 
-
                     LocalDate startDate = investment.getStartDate();
-
                     LocalDate endDate = investment.getEndDate();
-
 
                     int completedDays = 0;
 
-                    int daysRemaining =
-                            investment.getDurationDays();
-
+                    int daysRemaining = investment.getDurationDays();
 
                     if (startDate != null) {
 
@@ -461,98 +455,43 @@ public class AdminServiceImpl implements IAdminService {
                                         LocalDate.now()
                                 );
 
-
                         if (completedDays < 0) {
                             completedDays = 0;
                         }
 
-
-                        if (completedDays >
-                                investment.getDurationDays()) {
-
-                            completedDays =
-                                    investment.getDurationDays();
-
+                        if (completedDays > investment.getDurationDays()) {
+                            completedDays = investment.getDurationDays();
                         }
 
-
                         daysRemaining =
-                                investment.getDurationDays()
-                                        - completedDays;
-
+                                investment.getDurationDays() - completedDays;
 
                         if (daysRemaining < 0) {
                             daysRemaining = 0;
                         }
-
                     }
+
                     return DailyIncomeDetailsDto.builder()
-
-                            .investmentId(
-                                    investment.getId()
-                            )
-
-                            .userId(
-                                    user.getId()
-                            )
-
-                            .phone(
-                                    user.getPhone()
-                            )
-
-                            .planName(
-                                    plan.getPlanName()
-                            )
-
-                            .productName(
-                                    product.getProductName()
-                            )
-
-                            .investmentAmount(
-                                    investment.getInvestmentAmount()
-                            )
-
-                            .dailyIncome(
-                                    investment.getDailyIncome()
-                            )
-
-                            .durationDays(
-                                    investment.getDurationDays()
-                            )
-
-                            .purchaseDate(
-                                    startDate
-                            )
-
-                            .endDate(
-                                    endDate
-                            )
-
-                            .completedDays(
-                                    completedDays
-                            )
-
-                            .daysRemaining(
-                                    daysRemaining
-                            )
-
-                            .availableBalance(
-                                    user.getBalance()
-                            )
-
-                            .totalIncomePaid(
-                                    investment.getTotalIncomeGenerated()
-                            )
-
-                            .status(
-                                    investment.getStatus()
-                            )
-
+                            .investmentId(investment.getId())
+                            .userId(user.getId())
+                            .phone(user.getPhone())
+                            .planName(plan.getPlanName())
+                            .productName(product.getProductName())
+                            .investmentAmount(investment.getInvestmentAmount())
+                            .dailyIncome(investment.getDailyIncome())
+                            .durationDays(investment.getDurationDays())
+                            .purchaseDate(startDate)
+                            .endDate(endDate)
+                            .completedDays(completedDays)
+                            .daysRemaining(daysRemaining)
+                            .availableBalance(user.getBalance())
+                            .totalIncomePaid(investment.getTotalIncomeGenerated())
+                            .status(investment.getStatus())
                             .build();
-
                 })
                 .toList();
     }
+    
     @Override
     public List<RegisteredUserDto> getRegisteredUsers() {
 
